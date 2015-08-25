@@ -25,60 +25,104 @@ from collections import Counter
 import statscounter.stats as stats
 
 
+NUMBER_TYPES = set(['float', 'int', 'Decimal', 'Fraction'])
+
+
+class MultipleMostCommonValuesError(ValueError):
+	""""""
+	pass
+
+
 class StatsCounter(Counter):
+	
+	def key_types_distribution(self):
+		"""Return a p. distribution of the elements' types"""
+		return StatsCounter([type(element).__name__ 
+							 for element in self.elements()]).normalize()
+		
 	def mean(self):
+		""" AKA Expectation
+		"""
+		try:
+			return stats.mean(self.elements())
+		except (TypeError):
+			raise TypeError("Distribution is not a numerical type.")
+		
+	def expectation(self):
 		"""
 		"""
-		return stats.mean(self.values())
+		return self.mean()
 
 	def median(self, ):
 		"""
 		"""
-		return stats.median(self.values())
-
+		key_type = self.key_types_distribution().most_common(1)[0]
+		print(key_type)
+		if key_type[0] not in NUMBER_TYPES or key_type[1] != 1.0:
+			raise TypeError("Distribution is not a numerical type.")
+		else:
+			return stats.median(self.elements())
+		
 	def median_low(self):
 		"""
 		"""
-		return stats.median_low(self.values())
+		key_type = self.key_types_distribution().most_common(1)[0]
+		if key_type[0] not in NUMBER_TYPES or key_type[1] != 1.0:
+			raise TypeError("Distribution is not a numerical type.")
+		else:
+			return stats.median_low(self.elements())
 
 	def median_high(self):
 		"""
 		"""
-		return stats.median_high(self.values())
-
+		key_type = self.key_types_distribution().most_common(1)[0]
+		if key_type[0] not in NUMBER_TYPES or key_type[1] != 1.0:
+			raise TypeError("Distribution is not a numerical type.")
+		else:
+			return stats.median_high(self.elements())
+		
 	def median_grouped(self):
 		"""
 		"""
-		return stats.median_grouped(self.values())
-
+		key_type = self.key_types_distribution().most_common(1)[0]
+		if key_type[0] not in NUMBER_TYPES or key_type[1] != 1.0:
+			raise TypeError("Distribution is not a numerical type.")
+		else:	
+			return stats.median_grouped(self.elements())
+		
 	def mode(self):
 		"""
 		"""
-		return stats.mode(self.values())
+		return stats.mode(self.elements())
 
 	def variance(self):
 		"""
 		"""
-		return stats.variance(self.values())
+		return stats.variance(self.elements())
 
 	def pvariance(self):
 		"""
 		"""
-		return stats.pvariance(self.values())
+		return stats.pvariance(self.elements())
 
 	def stdev(self, ):
 		"""
 		"""
-		return stats.stdev(self.values())
+		return stats.stdev(self.elements())
 
 	def pstdev(self):
 		"""
 		"""
-		return stats.pstdev(self.values())
+		return stats.pstdev(self.elements())
 
 	def best_pair(self):
-		return self.most_common(1)[0]
-
+		try:
+			self.mode()
+		except (stats.StatisticsError):
+			raise MultipleMostCommonValuesError("Two or more values appear more than once.")
+		else:
+			return self.most_common(1)[0]
+		
 	def argmax(self):
 		"""
 		"""
